@@ -1,0 +1,17 @@
+---
+layout: default
+title: Field Notes
+---
+<ul class="post-list">
+  {% for post in site.posts %}
+  <li>
+    <div class="post-meta">
+      <span class="tag">{{ post.category | default: "field notes" }}</span>
+      <span class="tag">{{ post.system | default: "ttrpg" }}</span>
+      &nbsp;{{ post.date | date: "%Y-%m-%d" }}
+    </div>
+    <div class="post-title"><a href="{{ post.url | relative_url }}">{{ post.title }}</a></div>
+    {% if post.excerpt %}<div class="post-excerpt">{{ post.excerpt | strip_html | truncatewords: 30 }}</div>{% endif %}
+  </li>
+  {% endfor %}
+</ul>
