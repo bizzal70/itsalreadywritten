@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% if page.title %}{{ page.title }} — {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
+  <link rel="stylesheet" href="{{ "/assets/css/style.css" | relative_url }}">
+  {% seo %}
+  {% feed_meta %}
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="site-title"><a href="{{ "/" | relative_url }}">{{ site.title }}</a></div>
+      <div class="site-tagline">{{ site.tagline }}</div>
+      <nav>
+        <a href="{{ "/" | relative_url }}">Field Notes</a>
+        <a href="{{ "/rtfm/" | relative_url }}">RTFM</a>
+        <a href="{{ "/issues/" | relative_url }}">Issues</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    {{ content }}
+  </main>
+  <footer>
+    <p>{{ site.title }} &mdash; {{ site.tagline }}</p>
+  </footer>
+</body>
+</html>
