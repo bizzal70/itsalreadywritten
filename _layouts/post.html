@@ -1,0 +1,20 @@
+---
+layout: default
+---
+<article class="post">
+  <h1>{{ page.title }}</h1>
+  <div class="post-meta">
+    <span class="tag">{{ page.category | default: "field notes" }}</span>
+    <span class="tag">{{ page.system | default: "ttrpg" }}</span>
+    &nbsp;{{ page.date | date: "%Y-%m-%d" }}
+  </div>
+  {{ content }}
+  {% if page.sources %}
+  <div class="sources">
+    <strong>Sources</strong><br>
+    {% for source in page.sources %}
+    <a href="{{ source.url }}" target="_blank">{{ source.title }}</a>{% unless forloop.last %} &middot; {% endunless %}
+    {% endfor %}
+  </div>
+  {% endif %}
+</article>
