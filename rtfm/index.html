@@ -1,0 +1,15 @@
+---
+layout: default
+title: RTFM
+---
+<h2 style="margin-bottom:2rem;">RTFM &mdash; Mid-week deep dives</h2>
+<ul class="post-list">
+  {% assign rtfm_posts = site.posts | where: "tier", "rtfm" %}
+  {% for post in rtfm_posts %}
+  <li>
+    <div class="post-meta">{{ post.date | date: "%Y-%m-%d" }}</div>
+    <div class="post-title"><a href="{{ post.url | relative_url }}">{{ post.title }}</a></div>
+    {% if post.excerpt %}<div class="post-excerpt">{{ post.excerpt | strip_html | truncatewords: 30 }}</div>{% endif %}
+  </li>
+  {% endfor %}
+</ul>
