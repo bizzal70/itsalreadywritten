@@ -1,0 +1,30 @@
+title: "It's Already Written."
+tagline: "The rules are already written."
+description: "TTRPG rules, facts, and news — for people who actually read the book."
+url: "https://bizzal70.github.io"
+baseurl: "/itsalreadywritten"
+
+author:
+  name: "The Editor"
+
+permalink: /:year/:month/:day/:title/
+
+markdown: kramdown
+highlighter: rouge
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+exclude:
+  - scraper/
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
