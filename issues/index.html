@@ -1,0 +1,15 @@
+---
+layout: default
+title: Issues
+---
+<h2 style="margin-bottom:2rem;">Issues &mdash; Weekly roundup</h2>
+<ul class="post-list">
+  {% assign issues_posts = site.posts | where: "tier", "issues" %}
+  {% for post in issues_posts %}
+  <li>
+    <div class="post-meta">{{ post.date | date: "%Y-%m-%d" }}</div>
+    <div class="post-title"><a href="{{ post.url | relative_url }}">{{ post.title }}</a></div>
+    {% if post.excerpt %}<div class="post-excerpt">{{ post.excerpt | strip_html | truncatewords: 30 }}</div>{% endif %}
+  </li>
+  {% endfor %}
+</ul>
