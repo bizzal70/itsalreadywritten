@@ -18,7 +18,7 @@ import style
 from resources import validate_sources, build_resources_section
 
 ROOT = Path(__file__).resolve().parent.parent
-DRAFTS_DIR = ROOT / "_drafts"
+POSTS_DIR = ROOT / "_posts"          # auto-published (audit after a few)
 DB_PATH = Path(__file__).parent / "articles.db"
 ISSUE_TRACKER = Path(__file__).parent / "issue_number.txt"
 STATE_PATH = Path(__file__).parent / "state" / "published_issues.json"
@@ -108,10 +108,10 @@ def parse(raw):
     return summary, sources_line, "\n".join(body).strip()
 
 
-def write_draft(issue_number, summary, body, sources):
+def write_post(issue_number, summary, body, sources):
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     week = datetime.now(timezone.utc).strftime("Week of %B %d, %Y")
-    fname = DRAFTS_DIR / f"{today}-issue-{issue_number:03d}.md"
+    fname = POSTS_DIR / f"{today}-issue-{issue_number:03d}.md"
     title = f"Issue #{issue_number:03d} — {week}"   # em dash allowed in structural titles
     body = body + "\n\n" + build_resources_section(sources)
     fm = (
@@ -125,9 +125,9 @@ def write_draft(issue_number, summary, body, sources):
         f'summary: "{summary.replace(chr(34), chr(39))}"\n'
         "---\n\n"
     )
-    DRAFTS_DIR.mkdir(exist_ok=True)
+    POSTS_DIR.mkdir(exist_ok=True)
     fname.write_text(fm + body + "\n", encoding="utf-8")
-    print(f"Wrote DRAFT {fname.relative_to(ROOT)} (review before publishing)")
+    print(f"Wrote {fname.relative_to(ROOT)} (auto-published)")
     return fname
 
 
@@ -182,7 +182,7 @@ def main():
 
     sources = validate_sources(sources_line, input_urls)
     issue_number = next_issue_number()
-    write_draft(issue_number, summary, body, sources)
+    write_post(issue_number, summary, body, sources)
     commit_issue_number(issue_number)
     state["used_article_urls"].extend(sources or input_urls)   # dedup future Issues
     save_state(state)

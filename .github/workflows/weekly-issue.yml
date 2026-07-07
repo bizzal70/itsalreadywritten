@@ -32,16 +32,16 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python scraper/issues.py
-      - name: Commit draft
+      - name: Commit and push
         run: |
           git config user.name "itsalreadywritten-bot"
           git config user.email "actions@github.com"
-          # Issues are drafted to _drafts/ for review; never auto-published or tweeted
-          git add _drafts/ scraper/issue_number.txt scraper/state/published_issues.json
+          # Issues auto-publish to _posts/ (GH_PAT push triggers deploy + tweet)
+          git add _posts/ scraper/issue_number.txt scraper/state/published_issues.json
           if git diff --staged --quiet; then
-            echo "Too thin for an Issue this week; no draft."
+            echo "Too thin for an Issue this week; nothing published."
           else
-            git commit -m "Issue draft $(date +'%Y-%m-%d')"
+            git commit -m "Issue $(date +'%Y-%m-%d')"
             git pull --rebase origin main || true
             git push
           fi
