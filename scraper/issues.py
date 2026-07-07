@@ -9,19 +9,31 @@ Env: ANTHROPIC_API_KEY (unless DRY_RUN=1).
 """
 
 import os
+import json
 import sqlite3
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 import style
 from resources import validate_sources, build_resources_section
-from field_note import slugify
 
 ROOT = Path(__file__).resolve().parent.parent
 DRAFTS_DIR = ROOT / "_drafts"
 DB_PATH = Path(__file__).parent / "articles.db"
 ISSUE_TRACKER = Path(__file__).parent / "issue_number.txt"
+STATE_PATH = Path(__file__).parent / "state" / "published_issues.json"
 MODEL = "claude-opus-4-8"
+
+
+def load_state():
+    if STATE_PATH.exists():
+        return json.loads(STATE_PATH.read_text(encoding="utf-8"))
+    return {"used_article_urls": []}
+
+
+def save_state(state):
+    STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    STATE_PATH.write_text(json.dumps(state, indent=2), encoding="utf-8")
 
 
 def next_issue_number():
@@ -43,12 +55,6 @@ def weeks_items(conn, limit=120):
         ORDER BY (system_tags != '') DESC, score DESC
         LIMIT ?
     """, (since, limit)).fetchall()
-
-
-def mark_used(conn, urls):
-    for u in urls:
-        conn.execute("UPDATE articles SET used_in_issue = 1 WHERE url = ?", (u,))
-    conn.commit()
 
 
 def build_prompt(items):
@@ -131,9 +137,11 @@ def main():
         print("No articles.db; run the scraper first.")
         return
     conn = sqlite3.connect(DB_PATH)
-    items = weeks_items(conn)
+    state = load_state()
+    used = set(state["used_article_urls"])          # persisted across runs (no committed DB)
+    items = [it for it in weeks_items(conn) if it[1] not in used]
     if len(items) < 5:
-        print(f"Only {len(items)} items this week; too thin for an Issue. Skipping.")
+        print(f"Only {len(items)} fresh items this week; too thin for an Issue. Skipping.")
         conn.close()
         return
     print(f"Building Issue from {len(items)} items...")
@@ -176,7 +184,8 @@ def main():
     issue_number = next_issue_number()
     write_draft(issue_number, summary, body, sources)
     commit_issue_number(issue_number)
-    mark_used(conn, sources or input_urls)   # mark what we drew from (or all, if none declared)
+    state["used_article_urls"].extend(sources or input_urls)   # dedup future Issues
+    save_state(state)
     conn.close()
 
 

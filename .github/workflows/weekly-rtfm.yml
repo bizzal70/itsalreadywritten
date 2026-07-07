@@ -36,7 +36,7 @@ jobs:
         run: |
           git config user.name "itsalreadywritten-bot"
           git config user.email "actions@github.com"
-          git add _posts/ scraper/articles.db scraper/state/published_rtfm.json
+          git add _posts/ scraper/state/published_rtfm.json
           if git diff --staged --quiet; then
             echo "No RTFM this week (no 3+ atom cluster available)."
           else

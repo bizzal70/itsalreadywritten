@@ -37,7 +37,7 @@ jobs:
           git config user.name "itsalreadywritten-bot"
           git config user.email "actions@github.com"
           # Issues are drafted to _drafts/ for review; never auto-published or tweeted
-          git add _drafts/ scraper/articles.db scraper/issue_number.txt
+          git add _drafts/ scraper/issue_number.txt scraper/state/published_issues.json
           if git diff --staged --quiet; then
             echo "Too thin for an Issue this week; no draft."
           else
