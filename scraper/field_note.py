@@ -109,6 +109,9 @@ RULES = (
     "- Under 220 words. Tight.\n"
     "- Name the system, the rule/creature/spell/item, and the specific mechanic.\n"
     "- No hype, no filler, no second-person life-coaching.\n"
+    "- Be exact about identity. Use the fact's real name; NEVER rename or "
+    "reclassify it (a Bugbear is not a Goblin, Counterspell is not 'a spell'). "
+    "The TITLE must name the actual subject, not a different creature/thing.\n"
     "- Do NOT use em dashes or en dashes. Use periods, commas, or parentheses.\n"
     "- Ban this LLM-tell vocabulary: delve, tapestry, testament to, dive in, "
     "unleash, foster, moreover, furthermore, 'it's important to note', 'in the "
@@ -159,6 +162,23 @@ Summary: {nw['summary']}
 def slugify(text):
     s = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
     return re.sub(r"-{2,}", "-", s)[:60] or "field-note"
+
+
+_TITLE_STOP = {"the", "and", "for", "with", "that", "this"}
+
+
+def significant_words(name):
+    return [w for w in re.findall(r"[A-Za-z]+", name or "")
+            if len(w) > 3 and w.lower() not in _TITLE_STOP]
+
+
+def title_faithful(fact_name, title):
+    """The title must name the actual subject (guards against Claude renaming a
+    Bugbear Stalker to 'Goblin'). True if any significant fact word is present."""
+    words = significant_words(fact_name)
+    if not words:
+        return True
+    return any(w.lower() in (title or "").lower() for w in words)
 
 
 def parse_response(raw):
@@ -262,21 +282,35 @@ def main():
         print("Empty generation; skipping.")
         return
 
-    # deterministic AI-tell guard: normalize punctuation, then one stricter retry
-    # if any lexical tell survives (family rule enforced in code, not just prompt)
-    title, summary, body = (style.normalize(t) for t in (title, summary, body))
-    hits = style.lint(f"{title}\n{summary}\n{body}")
-    if hits:
-        print(f"AI tells detected {hits}; regenerating once, stricter.")
-        strict = prompt + ("\n\nYour previous draft used these banned AI tells: "
-                           f"{', '.join(hits)}. Rewrite avoiding ALL of them and "
-                           "any em/en dashes.")
+    # deterministic guards (enforced in code, not just prompt): normalize
+    # punctuation + AI-tell lint + title-fidelity, then ONE stricter retry.
+    def check(t, s, b):
+        problems = []
+        tells = style.lint(f"{t}\n{s}\n{b}")
+        if tells:
+            problems.append(f"banned AI tells ({', '.join(tells)})")
+        if kind == "atom" and not title_faithful(payload["fact_name"], t):
+            problems.append(f"the TITLE must name '{payload['fact_name']}' and must "
+                            "not rename or reclassify it")
+        return problems
+
+    title, summary, body = (style.normalize(x) for x in (title, summary, body))
+    problems = check(title, summary, body)
+    if problems:
+        print(f"Draft issues {problems}; regenerating once, stricter.")
+        strict = prompt + ("\n\nYour previous draft had these problems: "
+                           f"{'; '.join(problems)}. Fix ALL of them and avoid any "
+                           "em/en dashes.")
         t2, s2, b2 = generate(strict)
         if b2:
             title, summary, body = (style.normalize(x) for x in (t2, s2, b2))
-        hits = style.lint(f"{title}\n{summary}\n{body}")
-        if hits:
-            print(f"WARNING: residual AI tells after retry: {hits} (flag for audit)")
+        problems = check(title, summary, body)
+        if problems:
+            print(f"WARNING: residual issues after retry: {problems}")
+            # last-resort accuracy net: never ship a title that misnames the fact
+            if kind == "atom" and not title_faithful(payload["fact_name"], title):
+                title = payload["fact_name"]
+                print(f"  forced title to fact name: {title}")
 
     path = write_post(kind, payload, title, summary, body)
     mark_used(kind, payload, state)
