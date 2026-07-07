@@ -1,0 +1,46 @@
+name: Daily Field Note
+
+on:
+  schedule:
+    - cron: "0 13 * * *"   # 13:00 UTC (07:00 MT) daily
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "content"
+  cancel-in-progress: false
+
+jobs:
+  field-note:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}   # PAT so the post push triggers deploy + tweet-on-publish
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - name: Scrape (catch up)
+        run: python scraper/scraper.py
+      - name: Generate Field Note
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python scraper/field_note.py
+      - name: Commit and push
+        run: |
+          git config user.name "itsalreadywritten-bot"
+          git config user.email "actions@github.com"
+          git add _posts/ scraper/articles.db scraper/state/published_fieldnotes.json
+          if git diff --staged --quiet; then
+            echo "Nothing to publish today; no Field Note."
+          else
+            git commit -m "Field Note $(date +'%Y-%m-%d')"
+            git pull --rebase origin main || true
+            git push
+          fi
