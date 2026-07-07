@@ -1,0 +1,60 @@
+name: Tweet on publish
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "_posts/**"
+  workflow_dispatch:
+    inputs:
+      tweet_latest:
+        description: "Tweet the newest post (manual test)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "tweet"
+  cancel-in-progress: false
+
+jobs:
+  tweet:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: pip install -r scraper/requirements.txt
+
+      - name: Determine newly added posts
+        id: added
+        if: github.event_name == 'push'
+        run: |
+          BEFORE='${{ github.event.before }}'
+          AFTER='${{ github.event.after }}'
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "paths=" >> "$GITHUB_OUTPUT"
+          else
+            FILES=$(git diff --diff-filter=A --name-only "$BEFORE" "$AFTER" -- _posts | tr '\n' ' ')
+            echo "paths=$FILES" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Tweet
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+          POST_PATHS: ${{ steps.added.outputs.paths }}
+          TWEET_LATEST: ${{ github.event.inputs.tweet_latest }}
+        run: python scraper/tweet_on_publish.py
