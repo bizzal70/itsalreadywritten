@@ -23,6 +23,7 @@ from pathlib import Path
 
 import registries
 import sources as src
+import style
 
 ROOT = Path(__file__).resolve().parent.parent
 POSTS_DIR = ROOT / "_posts"
@@ -108,7 +109,10 @@ RULES = (
     "- Under 220 words. Tight.\n"
     "- Name the system, the rule/creature/spell/item, and the specific mechanic.\n"
     "- No hype, no filler, no second-person life-coaching.\n"
-    "- Do NOT use em dashes. Use periods, commas, or parentheses.\n"
+    "- Do NOT use em dashes or en dashes. Use periods, commas, or parentheses.\n"
+    "- Ban this LLM-tell vocabulary: delve, tapestry, testament to, dive in, "
+    "unleash, foster, moreover, furthermore, 'it's important to note', 'in the "
+    "world of', 'whether you're', 'not only... but also', 'ever-evolving'.\n"
     "- Do not mention that AI wrote this.\n\n"
     "Output EXACTLY:\n"
     "TITLE: <short punchy noun phrase, no system prefix>\n"
@@ -245,14 +249,34 @@ def main():
         raise SystemExit("ERROR: set ANTHROPIC_API_KEY (or DRY_RUN=1)")
     import anthropic
     client = anthropic.Anthropic(api_key=api_key)
-    resp = client.messages.create(
-        model=MODEL, max_tokens=900,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    title, summary, body = parse_response(resp.content[0].text.strip())
+
+    def generate(p):
+        resp = client.messages.create(
+            model=MODEL, max_tokens=900,
+            messages=[{"role": "user", "content": p}],
+        )
+        return parse_response(resp.content[0].text.strip())
+
+    title, summary, body = generate(prompt)
     if not body:
         print("Empty generation; skipping.")
         return
+
+    # deterministic AI-tell guard: normalize punctuation, then one stricter retry
+    # if any lexical tell survives (family rule enforced in code, not just prompt)
+    title, summary, body = (style.normalize(t) for t in (title, summary, body))
+    hits = style.lint(f"{title}\n{summary}\n{body}")
+    if hits:
+        print(f"AI tells detected {hits}; regenerating once, stricter.")
+        strict = prompt + ("\n\nYour previous draft used these banned AI tells: "
+                           f"{', '.join(hits)}. Rewrite avoiding ALL of them and "
+                           "any em/en dashes.")
+        t2, s2, b2 = generate(strict)
+        if b2:
+            title, summary, body = (style.normalize(x) for x in (t2, s2, b2))
+        hits = style.lint(f"{title}\n{summary}\n{body}")
+        if hits:
+            print(f"WARNING: residual AI tells after retry: {hits} (flag for audit)")
 
     path = write_post(kind, payload, title, summary, body)
     mark_used(kind, payload, state)
