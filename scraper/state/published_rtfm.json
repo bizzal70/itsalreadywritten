@@ -1,4 +1,10 @@
 {
-  "used_fact_pks": [],
-  "last_system": ""
+  "used_fact_pks": [
+    "srd-2024_ancient-black-dragon",
+    "srd-2024_ancient-blue-dragon",
+    "srd-2024_ancient-brass-dragon",
+    "srd-2024_ancient-bronze-dragon",
+    "srd-2024_ancient-copper-dragon"
+  ],
+  "last_system": "dnd5e"
 }
