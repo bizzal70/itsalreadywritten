@@ -1,0 +1,47 @@
+name: Weekly Issue
+
+on:
+  schedule:
+    - cron: "0 16 * * 5"   # Fridays 16:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "content"
+  cancel-in-progress: false
+
+jobs:
+  issue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - name: Scrape (catch up)
+        run: python scraper/scraper.py
+      - name: Draft Issue
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python scraper/issues.py
+      - name: Commit draft
+        run: |
+          git config user.name "itsalreadywritten-bot"
+          git config user.email "actions@github.com"
+          # Issues are drafted to _drafts/ for review; never auto-published or tweeted
+          git add _drafts/ scraper/articles.db scraper/issue_number.txt
+          if git diff --staged --quiet; then
+            echo "Too thin for an Issue this week; no draft."
+          else
+            git commit -m "Issue draft $(date +'%Y-%m-%d')"
+            git pull --rebase origin main || true
+            git push
+          fi
