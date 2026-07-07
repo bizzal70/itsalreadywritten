@@ -1,5 +1,7 @@
 {
-  "used_fact_pks": [],
+  "used_fact_pks": [
+    "srd-2024_bugbear-stalker"
+  ],
   "used_article_urls": [],
-  "last_system": ""
+  "last_system": "dnd5e"
 }
