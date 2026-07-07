@@ -79,12 +79,18 @@ def build_tweet(fm, url):
     system = (fm.get("system", "") or "").lower()
     issue = fm.get("issue", "")
 
-    sys_tag = {"dnd5e": "#DnD", "shadowdark": "#Shadowdark"}.get(system, "")
+    # per-system hashtag; add new systems here as they're introduced
+    sys_tag = {
+        "dnd5e": "#DnD",
+        "shadowdark": "#Shadowdark",
+        "dcc": "#DCCRPG",
+    }.get(system, "")
 
     if tier == "issues" or issue.isdigit():
         head = f"It's Already Written. — Issue #{int(issue):03d}" if issue.isdigit() \
                else "It's Already Written. — Issues"
-        body, tags = (summary or title), "#TTRPG #DnD #Shadowdark #OSR"
+        # cross-system roundup: keep tags generic so this scales as systems are added
+        body, tags = (summary or title), "#TTRPG #TabletopRPG #RPG"
     elif tier == "rtfm":
         head, body = "It's Already Written. — RTFM", (summary or title)
         tags = " ".join(t for t in ("#TTRPG", sys_tag, "#RPG") if t)
