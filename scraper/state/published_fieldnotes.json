@@ -2,8 +2,9 @@
   "used_fact_pks": [
     "srd-2024_bugbear-stalker",
     51,
-    2
+    2,
+    "xanathars-guide_word-of-radiance"
   ],
   "used_article_urls": [],
-  "last_system": "dcc"
+  "last_system": "dnd5e"
 }
