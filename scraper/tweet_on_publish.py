@@ -1,10 +1,8 @@
 """
 Tweet-on-publish for It's Already Written (@ItsAlrdyWritten).
 Triggered by .github/workflows/tweet-on-publish.yml when a new post is added
-under _posts/. Waits for the live GitHub Pages URL to return 200, then posts to X.
-
-Written uses a SINGLE _posts collection; the content tier is a front-matter field
-(tier: field-notes | rtfm | issues) rather than a separate Jekyll collection.
+under _posts/. Waits for the live GitHub Pages URL to return 200, then posts to X
+with a generated 1200x675 thumbnail card.
 
 Env:
   X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET  (repo secrets)
@@ -25,14 +23,12 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 def parse_front_matter(text):
-    """Parse ONLY top-level scalar keys (column 0). Indented lines such as the
-    items of a `sources:` YAML list are ignored on purpose, so a source's own
-    `title:` can't clobber the post title."""
+    """Parse ONLY top-level scalar keys (column 0)."""
     m = re.match(r"^---\s*\n(.*?)\n---\s*\n", text, re.S)
     fm = {}
     if m:
         for line in m.group(1).splitlines():
-            mm = re.match(r"^([A-Za-z_][\w-]*)\s*:\s*(.*)$", line)  # no leading space
+            mm = re.match(r"^([A-Za-z_][\w-]*)\s*:\s*(.*)$", line)
             if mm:
                 k, v = mm.group(1), mm.group(2).strip()
                 if len(v) >= 2 and v[0] in "\"'" and v[-1] == v[0]:
@@ -42,7 +38,6 @@ def parse_front_matter(text):
 
 
 def resolve(path):
-    """_posts/YYYY-MM-DD-slug.md  ->  {BLOG_URL}/YYYY/MM/DD/slug/"""
     p = Path(path)
     if p.parent.name != "_posts" or p.suffix != ".md":
         return None
@@ -74,12 +69,11 @@ def wait_for_200(url, timeout=300, interval=10):
 
 def build_tweet(fm, url):
     title = fm.get("title", "")
-    summary = fm.get("summary", "")          # generators may add this; falls back to title
+    summary = fm.get("summary", "")
     tier = (fm.get("tier", "") or "").lower()
     system = (fm.get("system", "") or "").lower()
     issue = fm.get("issue", "")
 
-    # per-system hashtag; add new systems here as they're introduced
     sys_tag = {
         "dnd5e": "#DnD",
         "shadowdark": "#Shadowdark",
@@ -89,12 +83,11 @@ def build_tweet(fm, url):
     if tier == "issues" or issue.isdigit():
         head = f"It's Already Written. — Issue #{int(issue):03d}" if issue.isdigit() \
                else "It's Already Written. — Issues"
-        # cross-system roundup: keep tags generic so this scales as systems are added
         body, tags = (summary or title), "#TTRPG #TabletopRPG #RPG"
     elif tier == "rtfm":
         head, body = "It's Already Written. — RTFM", (summary or title)
         tags = " ".join(t for t in ("#TTRPG", sys_tag, "#RPG") if t)
-    else:  # field-notes (default)
+    else:
         head, body = "It's Already Written. — Field Note", title
         tags = " ".join(t for t in ("#TTRPG", sys_tag) if t)
 
@@ -107,6 +100,15 @@ def build_tweet(fm, url):
         body = body[: max(0, 280 - overhead)].rstrip() + "..."
         tweet = assemble(body)
     return tweet
+
+
+def make_thumbnail(fm):
+    try:
+        from x_thumbnail import render
+        return render("written", fm)
+    except Exception as e:
+        print(f"[x_thumbnail] WARNING: {e}; posting without image")
+        return None
 
 
 def main():
@@ -144,6 +146,12 @@ def main():
     except Exception as e:
         print(f"READ-AUTH FAILED: {type(e).__name__}: {e}")
 
+    auth = tweepy.OAuth1UserHandler(
+        creds["X_API_KEY"], creds["X_API_SECRET"],
+        creds["X_ACCESS_TOKEN"], creds["X_ACCESS_TOKEN_SECRET"],
+    )
+    v1 = tweepy.API(auth)
+
     for path in targets:
         info = resolve(path)
         if not info:
@@ -153,10 +161,30 @@ def main():
         if not wait_for_200(info["url"]):
             print(f"  URL never returned 200 within timeout; skipping {path}")
             continue
+
+        thumb_path = make_thumbnail(info["fm"])
+        media_ids = None
+        if thumb_path:
+            try:
+                media = v1.media_upload(thumb_path)
+                media_ids = [media.media_id]
+                print(f"[x_thumbnail] media_id={media.media_id}")
+            except Exception as e:
+                print(f"[x_post] WARNING: media upload failed ({e}); posting without image")
+
         tweet = build_tweet(info["fm"], info["url"])
         print(f"Posting:\n{tweet}\n")
-        resp = client.create_tweet(text=tweet)
+        kwargs = {"text": tweet}
+        if media_ids:
+            kwargs["media_ids"] = media_ids
+        resp = client.create_tweet(**kwargs)
         print(f"Tweeted: https://x.com/{HANDLE}/status/{resp.data['id']}")
+
+        if thumb_path:
+            try:
+                os.unlink(thumb_path)
+            except Exception:
+                pass
 
 
 if __name__ == "__main__":
