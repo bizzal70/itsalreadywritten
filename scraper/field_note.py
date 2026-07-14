@@ -221,8 +221,12 @@ def write_post(kind, payload, title, summary, body):
         f"{src.yaml_block(source_list)}\n"
         "---\n\n"
     )
+    cta = (
+        "\n\n---\n\n*Daily field notes, weekly Issues. Follow "
+        "[@ItsAlrdyWritten](https://x.com/ItsAlrdyWritten) or subscribe via RSS.*"
+    )
     POSTS_DIR.mkdir(exist_ok=True)
-    fname.write_text(fm + body + "\n", encoding="utf-8")
+    fname.write_text(fm + body + cta + "\n", encoding="utf-8")
     print(f"Wrote {fname.relative_to(ROOT)}")
     return fname
 
