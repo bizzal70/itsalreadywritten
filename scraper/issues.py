@@ -84,7 +84,8 @@ Rules:
 - Ban: delve, tapestry, testament to, dive in, unleash, moreover, furthermore.
 
 Output format:
-- FIRST line: "SUMMARY: <one dry sentence for the blog index>"
+- FIRST line: "HEADLINE: <a specific, curiosity-driving headline for this week's issue, 40 to 70 characters, no issue number, no date, no clickbait lies; lead with the week's single most interesting concrete thing>"
+- SECOND line: "SUMMARY: <one dry sentence for the blog index>"
 - Then the post body (the five sections).
 - LAST line: "SOURCES: <comma-separated URLs, verbatim from the items below, of the ones you actually drew from>"
 
@@ -97,23 +98,34 @@ THIS WEEK'S ITEMS:
 
 
 def parse(raw):
-    summary, sources_line, body = "", "", []
+    headline, summary, sources_line, body = "", "", "", []
     for line in raw.splitlines():
-        if line.startswith("SUMMARY:"):
+        if line.startswith("HEADLINE:"):
+            headline = line.replace("HEADLINE:", "", 1).strip()
+        elif line.startswith("SUMMARY:"):
             summary = line.replace("SUMMARY:", "", 1).strip()
         elif line.startswith("SOURCES:"):
             sources_line = line
         else:
             body.append(line)
-    return summary, sources_line, "\n".join(body).strip()
+    return headline, summary, sources_line, "\n".join(body).strip()
 
 
-def write_post(issue_number, summary, body, sources):
+def write_post(issue_number, headline, summary, body, sources):
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    week = datetime.now(timezone.utc).strftime("Week of %B %d, %Y")
+    week = datetime.now(timezone.utc).strftime("%B %d, %Y")
     fname = POSTS_DIR / f"{today}-issue-{issue_number:03d}.md"
-    title = f"Issue #{issue_number:03d} — {week}"   # em dash allowed in structural titles
-    body = body + "\n\n" + build_resources_section(sources)
+    # Promote the hook (headline, else summary) into the title so it does click
+    # work; the issue number and week move to a kicker line above the body.
+    hook = (headline or summary).strip().strip('"').rstrip(".")
+    title = (hook or f"Issue #{issue_number:03d} — Week of {week}").replace('"', "'")
+    kicker = f"*Issue #{issue_number:03d} · Week of {week}*"
+    cta = (
+        "\n\n---\n\n*New Issue every week. Follow "
+        "[@ItsAlrdyWritten](https://x.com/ItsAlrdyWritten) or subscribe via RSS "
+        "so you do not miss the next ruling.*"
+    )
+    body = kicker + "\n\n" + body + "\n\n" + build_resources_section(sources) + cta
     fm = (
         "---\n"
         "layout: post\n"
@@ -162,16 +174,16 @@ def main():
                                    messages=[{"role": "user", "content": p}])
         return parse(r.content[0].text.strip())
 
-    summary, sources_line, body = generate(prompt)
+    headline, summary, sources_line, body = generate(prompt)
     input_urls = [it[1] for it in items]
 
-    summary, body = style.normalize(summary), style.normalize(body)
+    headline, summary, body = style.normalize(headline), style.normalize(summary), style.normalize(body)
     if style.lint(f"{summary}\n{body}"):
         tells = style.lint(f"{summary}\n{body}")
         print(f"AI tells {tells}; regenerating once.")
         strict = prompt + f"\n\nYour previous draft used banned tells ({', '.join(tells)}). Rewrite avoiding all of them and any em/en dashes."
-        summary, sources_line, body = generate(strict)
-        summary, body = style.normalize(summary), style.normalize(body)
+        headline, summary, sources_line, body = generate(strict)
+        headline, summary, body = style.normalize(headline), style.normalize(summary), style.normalize(body)
         if style.lint(f"{summary}\n{body}"):
             print("WARNING: residual tells after retry (flag for review)")
 
@@ -182,7 +194,7 @@ def main():
 
     sources = validate_sources(sources_line, input_urls)
     issue_number = next_issue_number()
-    write_post(issue_number, summary, body, sources)
+    write_post(issue_number, headline, summary, body, sources)
     commit_issue_number(issue_number)
     state["used_article_urls"].extend(sources or input_urls)   # dedup future Issues
     save_state(state)
