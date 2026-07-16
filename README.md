@@ -86,6 +86,8 @@ All scheduled workflows support `workflow_dispatch` for manual runs.
 
 ## Content rules
 
+- **Headline-first titles** — the generator asks the model for a `HEADLINE:` line and promotes it to the post title; the `Issue #NNN · Week of …` label drops to a kicker line above the body. The title slot does click-work instead of filing the post. Falls back to the summary, then the old label, if no headline comes back
+- **Every post closes with a follow CTA** — weekly Issues and daily Field Notes both end with a follow/subscribe line ([@ItsAlrdyWritten](https://x.com/ItsAlrdyWritten) or RSS), so a post is never a dead end
 - **No em dashes** — a deliberate choice to avoid an obvious AI-writing tell
 - **No AI disclosure** in post copy
 - **RTFM is not news-driven** — grounded only in official system documentation, not the scraped article DB
