@@ -20,6 +20,7 @@ import registries
 import sources as src
 import style
 from field_note import parse_response, slugify, significant_words
+from resources import build_related_section
 
 ROOT = Path(__file__).resolve().parent.parent
 POSTS_DIR = ROOT / "_posts"
@@ -155,8 +156,11 @@ def write_post(system, category, atoms, title, summary, body):
         f"{src.yaml_block(src_list)}\n"
         "---\n\n"
     )
+    related = build_related_section(POSTS_DIR, fname.name)
     POSTS_DIR.mkdir(exist_ok=True)
-    fname.write_text(fm + body + "\n", encoding="utf-8")
+    fname.write_text(
+        fm + body + ("\n\n" + related if related else "") + "\n", encoding="utf-8"
+    )
     print(f"Wrote {fname.relative_to(ROOT)}")
     return fname
 

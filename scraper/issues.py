@@ -15,7 +15,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 import style
-from resources import validate_sources, build_resources_section
+from resources import validate_sources, build_resources_section, build_related_section
 
 ROOT = Path(__file__).resolve().parent.parent
 POSTS_DIR = ROOT / "_posts"          # auto-published (audit after a few)
@@ -125,7 +125,11 @@ def write_post(issue_number, headline, summary, body, sources):
         "[@ItsAlrdyWritten](https://x.com/ItsAlrdyWritten) or subscribe via RSS "
         "so you do not miss the next ruling.*"
     )
-    body = kicker + "\n\n" + body + "\n\n" + build_resources_section(sources) + cta
+    related = build_related_section(POSTS_DIR, fname.name)
+    body = (
+        kicker + "\n\n" + body + "\n\n" + build_resources_section(sources)
+        + ("\n" + related if related else "") + cta
+    )
     fm = (
         "---\n"
         "layout: post\n"
