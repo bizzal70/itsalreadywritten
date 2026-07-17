@@ -24,6 +24,7 @@ from pathlib import Path
 import registries
 import sources as src
 import style
+from resources import build_related_section
 
 ROOT = Path(__file__).resolve().parent.parent
 POSTS_DIR = ROOT / "_posts"
@@ -225,8 +226,12 @@ def write_post(kind, payload, title, summary, body):
         "\n\n---\n\n*Daily field notes, weekly Issues. Follow "
         "[@ItsAlrdyWritten](https://x.com/ItsAlrdyWritten) or subscribe via RSS.*"
     )
+    related = build_related_section(POSTS_DIR, fname.name)
     POSTS_DIR.mkdir(exist_ok=True)
-    fname.write_text(fm + body + cta + "\n", encoding="utf-8")
+    fname.write_text(
+        fm + body + ("\n\n" + related if related else "") + cta + "\n",
+        encoding="utf-8",
+    )
     print(f"Wrote {fname.relative_to(ROOT)}")
     return fname
 
