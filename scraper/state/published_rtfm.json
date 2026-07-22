@@ -12,7 +12,11 @@
     "srd-2024_acid-splash",
     "srd-2024_aid",
     "srd-2024_alarm",
-    "srd-2024_alter-self"
+    "srd-2024_alter-self",
+    4,
+    10,
+    11,
+    8
   ],
-  "last_system": "dnd5e"
+  "last_system": "shadowdark"
 }
