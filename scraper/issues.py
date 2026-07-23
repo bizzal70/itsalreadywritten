@@ -139,6 +139,7 @@ def write_post(issue_number, headline, summary, body, sources):
         "tier: issues\n"
         f'issue: "{issue_number}"\n'
         f'summary: "{summary.replace(chr(34), chr(39))}"\n'
+        f'description: "{summary.replace(chr(34), chr(39))}"\n'
         "---\n\n"
     )
     POSTS_DIR.mkdir(exist_ok=True)
