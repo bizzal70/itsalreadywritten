@@ -25,6 +25,18 @@ import registries
 import sources as src
 import style
 from resources import build_related_section
+from note_quality import assess
+
+# Concrete-specificity signals for a rules Field Note: dice, a DC, or any number.
+_CONCRETE = re.compile(r"\b\d+d\d+\b|\bDC\s*\d+|\b\d[\d.,]*\b")
+
+
+def _quality_problems(body: str) -> list:
+    """Deterministic substance floor: enough substance, an 'At the table:' line,
+    and at least one concrete ref (dice/DC/number)."""
+    return assess(body, min_words=80, require=["at the table:"],
+                  concrete_re=_CONCRETE, need_specifics=1)
+
 
 ROOT = Path(__file__).resolve().parent.parent
 POSTS_DIR = ROOT / "_posts"
@@ -304,15 +316,22 @@ def main():
         return problems
 
     title, summary, body = (style.normalize(x) for x in (title, summary, body))
-    problems = check(title, summary, body)
+    problems = check(title, summary, body) + _quality_problems(body)
     if problems:
         print(f"Draft issues {problems}; regenerating once, stricter.")
         strict = prompt + ("\n\nYour previous draft had these problems: "
-                           f"{'; '.join(problems)}. Fix ALL of them and avoid any "
-                           "em/en dashes.")
+                           f"{'; '.join(problems)}. Fix ALL of them, be more "
+                           "specific (name the mechanic, dice, and DCs), and avoid "
+                           "any em/en dashes.")
         t2, s2, b2 = generate(strict)
         if b2:
             title, summary, body = (style.normalize(x) for x in (t2, s2, b2))
+        # A thin/generic note that still fails the substance floor is SKIPPED,
+        # not published. Tell/title issues keep the force-title fallback below.
+        qproblems = _quality_problems(body)
+        if qproblems:
+            print(f"Field Note still below the substance floor {qproblems}; skipping.")
+            return
         problems = check(title, summary, body)
         if problems:
             print(f"WARNING: residual issues after retry: {problems}")
