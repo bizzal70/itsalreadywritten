@@ -63,16 +63,16 @@ def build_prompt(items):
         tag = f" [{systics}]" if systics else ""
         lines.append(f"[{platform}] {pub[:10]} | {source}{tag}\nTitle: {title}\nURL: {url}\nSummary: {summary}\n")
     body = "\n---\n".join(lines)
-    return f"""You are the anonymous editor of "It's Already Written." — a weekly tabletop RPG intelligence digest, the RTFM entry in a family of dry, authoritative, source-cited digests. You cover all of TTRPG but weight your own systems (D&D 5e, Shadowdark, Dungeon Crawl Classics). Voice: world-weary, precise, allergic to hype and hobby drama. You read the rulebook, not the discourse.
+    return f"""You are the anonymous editor of "It's Already Written." â€” a weekly tabletop RPG intelligence digest, the RTFM entry in a family of dry, authoritative, source-cited digests. You cover all of TTRPG but weight your own systems (D&D 5e, Shadowdark, Dungeon Crawl Classics). Voice: world-weary, precise, allergic to hype and hobby drama. You read the rulebook, not the discourse.
 
 Below are this week's scraped TTRPG items (news, blog posts, and social). Write the weekly Issue in Markdown.
 
 Use exactly these section headers (## ...), in order:
-1. **This Week's Verdict** — 2 to 3 sentences capturing the week's theme with dry wit.
-2. **Releases & Announcements** — new books, products, and official news. Name the products and publishers.
-3. **Rules & Errata** — official rules changes, errata, and clarifications. Weight D&D 5e, Shadowdark, DCC.
-4. **The Community** — notable discourse, arguments, and posts worth knowing about.
-5. **On the Horizon** — crowdfunding, previews, and upcoming releases.
+1. **This Week's Verdict** â€” 2 to 3 sentences capturing the week's theme with dry wit.
+2. **Releases & Announcements** â€” new books, products, and official news. Name the products and publishers.
+3. **Rules & Errata** â€” official rules changes, errata, and clarifications. Weight D&D 5e, Shadowdark, DCC.
+4. **The Community** â€” notable discourse, arguments, and posts worth knowing about.
+5. **On the Horizon** â€” crowdfunding, previews, and upcoming releases.
 
 Rules:
 - Be specific: name products, publishers, systems, and people. Bold the named entities.
@@ -118,14 +118,14 @@ def write_post(issue_number, headline, summary, body, sources):
     # Promote the hook (headline, else summary) into the title so it does click
     # work; the issue number and week move to a kicker line above the body.
     hook = (headline or summary).strip().strip('"').rstrip(".")
-    title = (hook or f"Issue #{issue_number:03d} — Week of {week}").replace('"', "'")
-    kicker = f"*Issue #{issue_number:03d} · Week of {week}*"
+    title = (hook or f"Issue #{issue_number:03d} â€” Week of {week}").replace('"', "'")
+    kicker = f"*Issue #{issue_number:03d} Â· Week of {week}*"
     cta = (
         "\n\n---\n\n*New Issue every week. Follow "
         "[@ItsAlrdyWritten](https://x.com/ItsAlrdyWritten) or subscribe via RSS "
         "so you do not miss the next ruling.*"
     )
-    related = build_related_section(POSTS_DIR, fname.name)
+    related = build_related_section(POSTS_DIR, fname.name, current_text=f"{headline} {body}")
     body = (
         kicker + "\n\n" + body + "\n\n" + build_resources_section(sources)
         + ("\n" + related if related else "") + cta
