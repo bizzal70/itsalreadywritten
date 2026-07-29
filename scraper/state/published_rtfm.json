@@ -16,7 +16,12 @@
     4,
     10,
     11,
-    8
+    8,
+    "srd-2024_adult-blue-dragon",
+    "monsters-multiverse_ogre-chain-brute",
+    "srd-2024_ancient-gold-dragon",
+    "srd-2024_ancient-green-dragon",
+    "srd-2024_ancient-red-dragon"
   ],
-  "last_system": "shadowdark"
+  "last_system": "dnd5e"
 }
