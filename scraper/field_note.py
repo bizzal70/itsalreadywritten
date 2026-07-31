@@ -1,8 +1,8 @@
 """
 Daily Field Note generator for It's Already Written.
 
-Picks the single best-signal item across two streams â€” a rules atom (dnd5e /
-shadowdark / dcc) or a scraped news beat â€” WEIGHTED toward the user's systems,
+Picks the single best-signal item across two streams — a rules atom (dnd5e /
+shadowdark / dcc) or a scraped news beat — WEIGHTED toward the user's systems,
 lightly rewrites it into the "It's Already Written" RTFM voice via Claude, and
 writes a source-cited Jekyll post to _posts/.
 
@@ -111,7 +111,7 @@ def choose(state):
 
 # ---------------- prompts ----------------
 VOICE = (
-    'You are the anonymous editor of "It\'s Already Written." â€” the RTFM entry in '
+    'You are the anonymous editor of "It\'s Already Written." — the RTFM entry in '
     'a family of dry, authoritative, source-cited digests (its siblings cover cyber '
     'and crypto). Voice: world-weary, precise, faintly amused, deeply rules-literate. '
     'You actually read the book. You never hype, never pad, never hedge.'
