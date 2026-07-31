@@ -89,7 +89,7 @@ def build_prompt(system, category, atoms, context):
         ctx = "\n\nCurrent discourse you MAY reference for framing (optional, only if relevant):\n" + \
               "\n".join(f"- {t} ({s})" for t, s, _ in context)
     names = ", ".join(a["fact_name"] for a in atoms)
-    return f"""You are the anonymous editor of "It's Already Written." â€” the RTFM entry in a family of dry, authoritative, source-cited digests. You actually read the book.
+    return f"""You are the anonymous editor of "It's Already Written." — the RTFM entry in a family of dry, authoritative, source-cited digests. You actually read the book.
 
 Write an "RTFM" deep dive: a mid-week piece that synthesizes several related rules facts into one coherent lesson. Theme: {humanize(category)} in {system}.
 
