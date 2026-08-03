@@ -10,10 +10,7 @@ Run: python scraper.py     (no keys required)
 """
 
 import re
-import json
-import time
 import sqlite3
-import urllib.request
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from calendar import timegm
