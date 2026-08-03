@@ -70,10 +70,11 @@ All scheduled workflows support `workflow_dispatch` for manual runs.
 
 | File | Purpose |
 |---|---|
-| `scraper/feeds.py` | TTRPG RSS sources (EN World, RPGSite, RPGBOT, Dicebreaker, and others) |
+| `scraper/feeds.py` | TTRPG sources: 4 RSS feeds (EN World, Sly Flourish, Gnome Stew, Tribality) plus dice.camp Mastodon tag feeds (the TTRPG Mastodon) |
 | `scraper/scraper.py` | Pulls feeds, deduplicates by URL hash, caches to `articles.db` |
 | `scraper/issues.py` | Generates weekly Issue from this week's unused articles via Claude API |
 | `scraper/field_note.py` | Generates daily Field Note from last 24h articles; skips if nothing high-signal |
+| `scraper/note_quality.py` | Deterministic editorial substance floor for Field Notes: asserts word count / structure / concrete specifics. A thin note is regenerated once (stricter), then skipped |
 | `scraper/rtfm.py` | Picks next unused topic from topic backlog; generates evergreen RTFM article |
 | `scraper/sources.py` | Curated, stable per-system source URLs (D&D 5e SRD, Shadowdark, DCC) — never deep-links or LLM-generated URLs |
 | `scraper/resources.py` | Builds deterministic source citations for rules references |
