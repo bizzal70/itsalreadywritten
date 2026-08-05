@@ -21,7 +21,12 @@
     "monsters-multiverse_ogre-chain-brute",
     "srd-2024_ancient-gold-dragon",
     "srd-2024_ancient-green-dragon",
-    "srd-2024_ancient-red-dragon"
+    "srd-2024_ancient-red-dragon",
+    22,
+    55,
+    50,
+    100,
+    84
   ],
-  "last_system": "dnd5e"
+  "last_system": "shadowdark"
 }
