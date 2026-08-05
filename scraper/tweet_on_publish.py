@@ -68,6 +68,9 @@ def wait_for_200(url, timeout=300, interval=10):
 
 
 def build_tweet(fm, url):
+    """Two-part post: a link-free hook tweet (X's ranking suppresses reach on
+    posts with outbound links) plus a reply carrying the link. Leads with the
+    hook directly instead of a brand+type prefix eating the preview text."""
     title = fm.get("title", "")
     summary = fm.get("summary", "")
     tier = (fm.get("tier", "") or "").lower()
@@ -81,25 +84,28 @@ def build_tweet(fm, url):
     }.get(system, "")
 
     if tier == "issues" or issue.isdigit():
-        head = f"It's Already Written. — Issue #{int(issue):03d}" if issue.isdigit() \
-               else "It's Already Written. — Issues"
         body, tags = (summary or title), "#TTRPG #TabletopRPG #RPG"
+        label = f"Issue #{int(issue):03d}" if issue.isdigit() else "Issue"
     elif tier == "rtfm":
-        head, body = "It's Already Written. — RTFM", (summary or title)
+        body = summary or title
         tags = " ".join(t for t in ("#TTRPG", sys_tag, "#RPG") if t)
+        label = "RTFM"
     else:
-        head, body = "It's Already Written. — Field Note", title
+        body = title
         tags = " ".join(t for t in ("#TTRPG", sys_tag) if t)
+        label = "Field Note"
 
     def assemble(b):
-        return f"{head}\n\n{b}\n\n{url}\n\n{tags}"
+        return f"{b}\n\n{tags}"
 
-    tweet = assemble(body)
-    if len(tweet) > 280:
+    main = assemble(body)
+    if len(main) > 280:
         overhead = len(assemble("")) + 3
         body = body[: max(0, 280 - overhead)].rstrip() + "..."
-        tweet = assemble(body)
-    return tweet
+        main = assemble(body)
+
+    reply = f"Full {label}: {url}"
+    return main, reply
 
 
 def make_thumbnail(fm):
@@ -172,13 +178,18 @@ def main():
             except Exception as e:
                 print(f"[x_post] WARNING: media upload failed ({e}); posting without image")
 
-        tweet = build_tweet(info["fm"], info["url"])
+        tweet, reply_tweet = build_tweet(info["fm"], info["url"])
         print(f"Posting:\n{tweet}\n")
         kwargs = {"text": tweet}
         if media_ids:
             kwargs["media_ids"] = media_ids
         resp = client.create_tweet(**kwargs)
-        print(f"Tweeted: https://x.com/{HANDLE}/status/{resp.data['id']}")
+        tweet_id = resp.data["id"]
+        print(f"Tweeted: https://x.com/{HANDLE}/status/{tweet_id}")
+
+        print(f"Posting link reply:\n{reply_tweet}\n")
+        reply_resp = client.create_tweet(text=reply_tweet, in_reply_to_tweet_id=tweet_id)
+        print(f"Reply posted: https://x.com/{HANDLE}/status/{reply_resp.data['id']}")
 
         if thumb_path:
             try:
