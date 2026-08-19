@@ -30,7 +30,12 @@
     333,
     409,
     169,
-    141
+    141,
+    "srd-2024_harpy",
+    "srd-2024_wererat",
+    "srd-2024_goblin-warrior",
+    "srd-2024_awakened-tree",
+    "srd-2024_gold-dragon-wyrmling"
   ],
-  "last_system": "dcc"
+  "last_system": "dnd5e"
 }
