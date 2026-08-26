@@ -35,7 +35,12 @@
     "srd-2024_wererat",
     "srd-2024_goblin-warrior",
     "srd-2024_awakened-tree",
-    "srd-2024_gold-dragon-wyrmling"
+    "srd-2024_gold-dragon-wyrmling",
+    17,
+    82,
+    199,
+    126,
+    136
   ],
-  "last_system": "dnd5e"
+  "last_system": "shadowdark"
 }
