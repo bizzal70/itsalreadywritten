@@ -76,8 +76,9 @@
     118,
     202,
     "srd-2024_damage-and-healing_knocking-out-a-creature",
-    176
+    176,
+    20
   ],
   "used_article_urls": [],
-  "last_system": "shadowdark"
+  "last_system": "dcc"
 }
