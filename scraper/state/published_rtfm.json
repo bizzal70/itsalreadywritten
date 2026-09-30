@@ -60,7 +60,12 @@
     76,
     142,
     60,
-    78
+    78,
+    "srd-2024_damage-and-healing_healing",
+    "srd-2024_damage-and-healing_knocking-out-a-creature",
+    "srd-2024_proficiency_skill-proficiencies",
+    "srd-2024_damage-and-healing_hit-points",
+    "srd-2024_combat_cover"
   ],
-  "last_system": "dcc"
+  "last_system": "dnd5e"
 }
