@@ -83,8 +83,9 @@
     464,
     "srd-2024_damage-and-healing_healing",
     26,
-    23
+    23,
+    "srd-2024_inflict-wounds"
   ],
   "used_article_urls": [],
-  "last_system": "dcc"
+  "last_system": "dnd5e"
 }
