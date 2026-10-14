@@ -65,7 +65,12 @@
     "srd-2024_damage-and-healing_knocking-out-a-creature",
     "srd-2024_proficiency_skill-proficiencies",
     "srd-2024_damage-and-healing_hit-points",
-    "srd-2024_combat_cover"
+    "srd-2024_combat_cover",
+    85,
+    53,
+    26,
+    28,
+    71
   ],
-  "last_system": "dnd5e"
+  "last_system": "shadowdark"
 }
