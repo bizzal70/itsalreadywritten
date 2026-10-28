@@ -75,7 +75,12 @@
     144,
     230,
     464,
-    202
+    202,
+    "srd-2024_private-sanctum",
+    "srd-2024_hex",
+    "srd-2024_find-traps",
+    "srd-2024_inflict-wounds",
+    "srd-2024_scorching-ray"
   ],
-  "last_system": "dcc"
+  "last_system": "dnd5e"
 }
