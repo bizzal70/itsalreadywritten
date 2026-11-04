@@ -80,7 +80,12 @@
     "srd-2024_hex",
     "srd-2024_find-traps",
     "srd-2024_inflict-wounds",
-    "srd-2024_scorching-ray"
+    "srd-2024_scorching-ray",
+    66,
+    75,
+    41,
+    112,
+    105
   ],
-  "last_system": "dnd5e"
+  "last_system": "shadowdark"
 }
