@@ -90,7 +90,12 @@
     306,
     264,
     277,
-    475
+    475,
+    "srd-2024_giant-slayer-rapier",
+    "tashas-cauldron_coiling-grasp-tattoo",
+    "srd-2024_ring-of-spell-turning",
+    "srd-2024_wand-of-polymorph",
+    "srd-2024_vicious-greatsword"
   ],
-  "last_system": "dcc"
+  "last_system": "dnd5e"
 }
